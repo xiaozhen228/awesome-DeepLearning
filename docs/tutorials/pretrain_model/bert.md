@@ -14,7 +14,7 @@ BERT整体框架包含pre-train和fine-tune两个阶段。pre-train阶段模型�
 <img src="https://ai-studio-static-online.cdn.bcebos.com/7b5e70561695477ea0c1b36f8ed6cbde577000b89d7748b99af4eeec1d1ab83a" width = "700"/> <br />
 </p><br><center>图1 BERT结构</center></br>
 
-BERT是用了Transformer的encoder侧的网络，encoder中的Self-attention机制在编码一个token的时候同时利用了其上下文的token，其中‘同时利用上下文’即为双向的体现，而并非想Bi-LSTM那样把句子倒序输入一遍。
+BERT是用了Transformer的encoder侧的网络，encoder中的Self-attention机制在编码一个token的时候同时利用了其上下文的token，其中‘同时利用上下文’即为双向的体现，而并非像Bi-LSTM那样把句子倒序输入一遍。
 
 在它之前是GPT，GPT使用的是Transformer的decoder侧的网络，GPT是一个单向语言模型的预训练过程，更适用于文本生成，通过前文去预测当前的字。
 
@@ -29,7 +29,7 @@ Embedding由三种Embedding求和而成：
 + Segment Embeddings用来区别两种句子，因为预训练不光做LM还要做以两个句子为输入的分类任务
 + Position Embeddings和之前文章中的Transformer不一样，不是三角函数而是学习出来的
 
-其中[CLS]表示该特征用于分类模型，对非分类模型，该符合可以省去。[SEP]表示分句符号，用于断开输入语料中的两个句子。
+其中[CLS]表示该特征用于分类模型，对非分类模型，该符号可以省去。[SEP]表示分句符号，用于断开输入语料中的两个句子。
 
 BERT在第一句前会加一个[CLS]标志，最后一层该位对应向量可以作为整句话的语义表示，从而用于下游的分类任务等。因为与文本中已有的其它词相比，这个无明显语义信息的符号会更“公平”地融合文本中各个词的语义信息，从而更好的表示整句话的语义。
  具体来说，self-attention是用文本中的其它词来增强目标词的语义表示，但是目标词本身的语义还是会占主要部分的，因此，经过BERT的12层（BERT-base为例），每次词的embedding融合了所有词的信息，可以去更好的表示自己的语义。而[CLS]位本身没有语义，经过12层，句子级别的向量，相比其他正常词，可以更好的表征句子语义。
@@ -142,7 +142,7 @@ BERT是一个多任务模型，它的预训练（Pre-training）任务是由两�
 
 ### MLM
 
-+ MLM是指在训练的时候随即从输入语料上mask掉一些单词，然后通过的上下文预测该单词，该任务非常像我们在中学时期经常做的完形填空。正如传统的语言模型算法和RNN匹配那样，MLM的这个性质和Transformer的结构是非常匹配的。在BERT的实验中，15%的WordPiece Token会被随机Mask掉。在训练模型时，一个句子会被多次喂到模型中用于参数学习，但是Google并没有在每次都mask掉这些单词，而是在确定要Mask掉的单词之后，做以下处理。
++ MLM是指在训练的时候随机从输入语料上mask掉一些单词，然后通过上下文预测该单词，该任务非常像我们在中学时期经常做的完形填空。正如传统的语言模型算法和RNN匹配那样，MLM的这个性质和Transformer的结构是非常匹配的。在BERT的实验中，15%的WordPiece Token会被随机Mask掉。在训练模型时，一个句子会被多次喂到模型中用于参数学习，但是Google并没有在每次都mask掉这些单词，而是在确定要Mask掉的单词之后，做以下处理。
 	+ 80%的时候会直接替换为[Mask]，将句子 "my dog is cute" 转换为句子 "my dog is [Mask]"。
     + 10%的时候将其替换为其它任意单词，将单词 "cute" 替换成另一个随机词，例如 "apple"。将句子 "my dog is cute" 转换为句子 "my dog is apple"。
     + 10%的时候会保留原始Token，例如保持句子为 "my dog is cute" 不变。
@@ -153,8 +153,8 @@ BERT是一个多任务模型，它的预训练（Pre-training）任务是由两�
 
 **优点**
 
-+ 1）被随机选择15%的词当中以10%的概率用任意词替换去预测正确的词，相当于文本纠错任务，为BERT模型赋予了一定的文本纠错能力；
-+ 2）被随机选择15%的词当中以10%的概率保持不变，缓解了finetune时候与预训练时候输入不匹配的问题（预训练时候输入句子当中有mask，而finetune时候输入是完整无缺的句子，即为输入不匹配问题）。
++ 1）被随机选择的15%的词当中以10%的概率用任意词替换去预测正确的词，相当于文本纠错任务，为BERT模型赋予了一定的文本纠错能力；
++ 2）被随机选择的15%的词当中以10%的概率保持不变，缓解了finetune时候与预训练时候输入不匹配的问题（预训练时候输入句子当中有mask，而finetune时候输入是完整无缺的句子，即为输入不匹配问题）。
 
 **缺点**
 
@@ -194,7 +194,7 @@ BERT预训练模型最多只能输入512个词，这是因为在BERT中，Token�
     + STS-B：预测两个句子的相似性，包括5个级别。
     + MRPC：也是判断两个句子是否是等价的。
     + RTE：类似于MNLI，但是只是对蕴含关系的二分类判断，而且数据集更小。
-    + SWAG：从四个句子中选择为可能为前句下文的那个。
+    + SWAG：从四个句子中选择为可能前句下文的那个。
 + 基于单个句子的分类任务
 	+ SST-2：电影评价的情感分析。
     + CoLA：句子语义判断，是否是可接受的（Acceptable）。
@@ -207,7 +207,7 @@ BERT预训练模型最多只能输入512个词，这是因为在BERT中，Token�
 <img src="https://ai-studio-static-online.cdn.bcebos.com/46789704fc834558b340e0328253108e66cac3ab7b784e31b01f393652d9ed55" width = "700"/> <br />
 </p><br><center>图3 BERT 用于不同的 NLP 任务</center></br>
 
-## BERT,GPT,ELMO的区别
+## BERT, GPT, ELMO的区别
 
 ![](https://raw.githubusercontent.com/w5688414/paddleImage/main/bert_img/bert_elmo_gpt.png)
 
